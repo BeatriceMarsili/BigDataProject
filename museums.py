@@ -1,9 +1,9 @@
 from urllib.request import Request, urlopen
-import json
-import pandas as pd
-
 #custom file to save some configurations
 from utilities import *
+
+import json
+import pandas as pd
 
 #creates dictionary from JSON station_information
 base = "https://maps.googleapis.com/maps/api/place/details/json?"
