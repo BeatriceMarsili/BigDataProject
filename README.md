@@ -21,7 +21,7 @@ If, while working you installed new packages, no changes will be saved on the re
 $	pip freeze > environment.txt
 `
 
-All the private API keys and sensitive data are to be update inside the *utilities.py* file. Again, anything won't be saved on the repo thanks to the *.gitignore* settings. 
+All the private API keys and sensitive data are to be update inside a file called *utilities.py* file. Again, anything won't be saved on the repo thanks to the *.gitignore* settings. 
 
 ## Startup
 Before working on anything, start the virtual environment:
