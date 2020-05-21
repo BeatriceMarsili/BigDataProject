@@ -1,0 +1,39 @@
+{ "museums": [
+    {
+      "name": "INTERIOR MUSEUM",
+      "address": "1849 C STREET NW",
+      "longitude": -77.04260027,
+      "latitude": 38.89444538
+    },
+    {
+      "name": "FREDERICK DOUGLASS NATIONAL HISTORIC SITE",
+      "address": "1411 W STREET SE",
+      "longitude": -76.98517717,
+      "latitude": 38.863382
+    },
+    {
+      "name": "MARY BETHUNE COUNCIL HOUSE",
+      "address": "1318 VERMONT AVENUE NW",
+      "longitude": -77.03086335,
+      "latitude": 38.90816835
+    },
+    {
+      "name": "FORD'S THEATRE",
+      "address": "511 10TH STREET NW",
+      "longitude": -77.02579655,
+      "latitude": 38.89658294
+    },
+    {
+      "name": "PETERSEN HOUSE",
+      "address": "516 10TH STREET NW",
+      "longitude": -77.02619882,
+      "latitude": 38.89676807
+    },
+    {
+      "name": "GALLAUDET UNIVERSITY MUSEUM",
+      "address": "800 FLORIDA AVENUE NE",
+      "longitude": -76.99492972,
+      "latitude": 38.90577601
+    }
+  ]
+}

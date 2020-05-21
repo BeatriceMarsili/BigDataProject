@@ -52,20 +52,87 @@ if debug:
 #At this point the "formatted_clean" dictionary contains a JSON like structure with all the relevant data 
 #needed for the google Places API. Since the API could be very expensive the data are cached inside the "cache" folder.
 #The name are univocally translated into hashes to standardize the operation.
-encrypter = hashlib.md5()
 
-for element in museum_clean:
-	
+errors = 0
 
+for element in museums_clean["museums"]:
+	data = {}
+	if not connect_online_API:
+		#use the cached local files, which are saved with an unique MD5 hash
+		encrypter = hashlib.md5()
+		encrypter.update((element['name']).encode('utf-8'))
+		filename = "./cache/" + encrypter.hexdigest() + ".json"
 
-encrypter.update(().encode('utf-8'))
-unique_name = encrypter.hexdigest()
+		with open(filename) as json_file:
+			data = json.load(json_file) 
 
+		if debug:
+			print("data loaded from cached source")
 
-#creates dictionary from JSON station_information
-base = "https://maps.googleapis.com/maps/api/place/details/json?"
+	else:
+		#query google places to gather all the required informations
+		base_url_search = "https://maps.googleapis.com/maps/api/place/findplacefromtext/json?"
+		complete_search = base_url_search + "key=" + google_key + "&inputtype=textquery&input=" + element["name"].lower().replace(" ","%20") + "%20was"
+		
+		##test until the API is not operative
+		#search_response = urllib.request.urlopen(complete_search)
+		#data = json.loads(search_response.read())
 
-complete = base + "key=" + google_key + "&place_id="
-print(complete)
+		#remove after API enabled
+		with open("place_example.json") as json_file:
+			search_result = json.load(json_file) 
 
+		#save the place id, fundamental for the detail research
+		element["place_id"] = search_result["candidates"][0]["place_id"]
+		if debug:
+			print(element)
 
+		base_url_details = "https://maps.googleapis.com/maps/api/place/details/json?"
+		complete_details = base_url_details + "key=" + google_key + "&place_id=" + element["place_id"]
+		
+		##test until the API is not operative
+		#details_response = urllib.request.urlopen(complete_details)
+		#data = json.loads(search_response.read())
+		
+		#remove after API enabled
+		with open("details_example.json") as json_file:
+			data = json.load(json_file) 
+
+		#Now the "data" variable contains an instance of the downloaded data from the google query
+		#If we need to cache those data we store it (obviously only if they come from the internet)
+
+		if cache_local:
+			encrypter = hashlib.md5()
+			encrypter.update((element['name']).encode('utf-8'))
+			filename = "./cache/" + encrypter.hexdigest() + ".json"
+
+			with open(filename, 'w+') as json_file:
+			    json.dump(data, json_file)
+
+		if debug:
+			cache_string = ""
+			if cache_local:
+				cache_string = "not"
+			print("data loaded from google API source and " + cache_string + " cached locally")
+
+	#Now we proceed with the extraction of the relevant data from the "data" variabile - NOTE: data is actually kinda a bad name, will refactor it
+	if data["status"] == "OK":
+		main_info = data["result"]
+		#save the phone number as a string (might be useless, but whatever)
+		element["phone_number"] = main_info["international_phone_number"]
+		#opening_hours. Actually not formatted, will agree on a standard
+		element["opening_hours"] = main_info["opening_hours"]
+		element["rating"] = main_info["rating"]
+		element["website"] = main_info["website"]
+		#TYPE OF 
+	else:
+		errors=errors+1
+
+if debug:
+	if errors == 0:
+		print("Data fetching complete without errors")
+	else:
+		print("Data fetching complete. " + str(errors) + " errors found. Data might be incomplete")
+
+with open("museums.json", 'w+') as json_file:
+    json.dump(museums_clean, json_file)

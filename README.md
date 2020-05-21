@@ -12,7 +12,9 @@ $	pyhton3 - m venv virtual
 Then activate the environment and install all the required packages. They are stored inside teh *environment.txt* file.
 
 `
-$ 	. virtual/bin/activate 
+$ 	. virtual/bin/activate
+`
+`
 $	pip install -r environment
 `
 
