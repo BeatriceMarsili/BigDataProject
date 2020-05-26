@@ -33,6 +33,26 @@
 		    accessToken: 'sk.eyJ1IjoiaXJvbjUxMiIsImEiOiJjazl0dHIwaWkwbjF5M2VwY3lqMXhvdDNxIn0.hnRColE3LzVhgDIHdPEdnA'
 		}).addTo(mymap);
 
+		var blue = L.icon({
+		    iconUrl: '/images/Orange',
+		    iconSize: [25, 41],
+		    iconAnchor: [22, 94],
+		    popupAnchor: [-3, -76],
+		    shadowUrl: 'my-icon-shadow.png',
+		    shadowSize: [68, 95],
+		    shadowAnchor: [22, 94]
+		});
+
+		var green = L.icon({
+		    iconUrl: '/images/Orange',
+		    iconSize: [25, 41],
+		    iconAnchor: [22, 94],
+		    popupAnchor: [-3, -76],
+		    shadowUrl: 'my-icon-shadow.png',
+		    shadowSize: [68, 95],
+		    shadowAnchor: [22, 94]
+		});
+
 		var orange = L.icon({
 		    iconUrl: '/images/Orange',
 		    iconSize: [25, 41],
@@ -56,7 +76,7 @@
 		var mmarker = []
 		data.museums.forEach(function(item, index) {
 			
-			var tmp = L.marker([item.lat, item.lon], {icon : orange}).addTo(mymap);
+			var tmp = L.marker([item.latitude, item.logitude], {icon : red}).addTo(mymap);
 			tmp.on('click',function() {
 				tmp.bindPopup("<b>" + item.name + "</b><br>Sono un museo!")
 			})
@@ -69,7 +89,7 @@
 		var dmarker = []
 		data.docks.forEach(function(item, index) {
 			
-			var tmp = L.marker([item.lat, item.lon], {icon : red}).addTo(mymap);
+			var tmp = L.marker([item.latitude, item.lon], {icon : orange}).addTo(mymap);
 			tmp.on('click',function() {
 				tmp.bindPopup("<b>" + item.name + "</b><br>Sono un dock per le bici!")
 			})

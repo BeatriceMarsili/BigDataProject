@@ -72,59 +72,72 @@ for element in museums_clean["museums"]:
 	else:
 		#query google places to gather all the required informations
 		base_url_search = "https://maps.googleapis.com/maps/api/place/findplacefromtext/json?"
-		complete_search = base_url_search + "key=" + google_key + "&inputtype=textquery&input=" + element["name"].lower().replace(" ","%20") + "%20was"
+		complete_search = base_url_search + "key=" + google_key + "&inputtype=textquery&input=" + (element["name"].lower().replace(" ","%20")).replace("\r\n","") + "%20washingtondc"
 		
 		##test until the API is not operative
-		#search_response = urllib.request.urlopen(complete_search)
-		#data = json.loads(search_response.read())
+		search_response = urllib.request.urlopen(complete_search)
+		search_result = json.loads(search_response.read())
 
-		#remove after API enabled
-		with open("place_example.json") as json_file:
-			search_result = json.load(json_file) 
+		##remove after API enabled
+		##with open("place_example.json") as json_file:
+		##	search_result = json.load(json_file) 
 
 		#save the place id, fundamental for the detail research
-		element["place_id"] = search_result["candidates"][0]["place_id"]
-		if debug:
-			print(element)
-
-		base_url_details = "https://maps.googleapis.com/maps/api/place/details/json?"
-		complete_details = base_url_details + "key=" + google_key + "&place_id=" + element["place_id"]
+		if search_result['candidates'] != []:
+			element["place_id"] = search_result["candidates"][0]["place_id"]
+			if debug:
+				print(element)
+		else:
+			element["place_id"] = 0
 		
-		##test until the API is not operative
-		#details_response = urllib.request.urlopen(complete_details)
-		#data = json.loads(search_response.read())
-		
-		#remove after API enabled
-		with open("details_example.json") as json_file:
-			data = json.load(json_file) 
+		if element["place_id"] != 0:
 
-		#Now the "data" variable contains an instance of the downloaded data from the google query
-		#If we need to cache those data we store it (obviously only if they come from the internet)
+			base_url_details = "https://maps.googleapis.com/maps/api/place/details/json?"
+			complete_details = base_url_details + "key=" + google_key + "&place_id=" + element["place_id"]
+			
+			##test until the API is not operative
+			details_response = urllib.request.urlopen(complete_details)
+			data = json.loads(details_response.read())
+			
+			##remove after API enabled
+			##with open("details_example.json") as json_file:
+			##	data = json.load(json_file) 
 
-		if cache_local:
-			encrypter = hashlib.md5()
-			encrypter.update((element['name']).encode('utf-8'))
-			filename = "./cache/" + encrypter.hexdigest() + ".json"
+			#Now the "data" variable contains an instance of the downloaded data from the google query
+			#If we need to cache those data we store it (obviously only if they come from the internet)
 
-			with open(filename, 'w+') as json_file:
-			    json.dump(data, json_file)
-
-		if debug:
-			cache_string = ""
 			if cache_local:
-				cache_string = "not"
-			print("data loaded from google API source and " + cache_string + " cached locally")
+				encrypter = hashlib.md5()
+				encrypter.update((element['name']).encode('utf-8'))
+				filename = "./cache/" + encrypter.hexdigest() + ".json"
+
+				with open(filename, 'w+') as json_file:
+				    json.dump(data, json_file)
+
+			if debug:
+				cache_string = ""
+				if cache_local:
+					cache_string = "not"
+				print("data loaded from google API source and " + cache_string + " cached locally")
 
 	#Now we proceed with the extraction of the relevant data from the "data" variabile - NOTE: data is actually kinda a bad name, will refactor it
+	#permanently closed?
 	if data["status"] == "OK":
 		main_info = data["result"]
 		#save the phone number as a string (might be useless, but whatever)
-		element["phone_number"] = main_info["international_phone_number"]
+		
+		if "international_phone_number" in main_info:
+			element["phone_number"] = main_info["international_phone_number"]
+		if "permanently_closed" in main_info:
+			element["permanently_closed"] = main_info["permanently_closed"]
+
 		#opening_hours. Actually not formatted, will agree on a standard
-		element["opening_hours"] = main_info["opening_hours"]
-		element["rating"] = main_info["rating"]
-		element["website"] = main_info["website"]
-		#TYPE OF 
+		if "opening_hours" in main_info:
+			element["opening_hours"] = main_info["opening_hours"]
+		if "rating" in main_info:
+			element["rating"] = main_info["rating"]
+		if "website" in main_info:
+			element["website"] = main_info["website"]
 	else:
 		errors=errors+1
 
@@ -136,3 +149,5 @@ if debug:
 
 with open("museums.json", 'w+') as json_file:
     json.dump(museums_clean, json_file)
+
+
