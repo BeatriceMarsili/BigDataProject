@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>BDTproject</title>
+	<title>Washington Bike - Big Data Project</title>
 	
 	<!--Leaflet (map render)-->
 	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css" />
@@ -9,95 +9,191 @@
 
 	<!--jQuery-->
 	<script src="https://code.jquery.com/jquery-3.5.1.slim.js"></script>
+
+	<!--Bootstrap-->
+    <link rel="stylesheet" type="text/css" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+    <script type="text/javascript" src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
 </head>
 <body>
 	<div id="mapid"></div>
 
 	<script type="text/javascript">
-		var data = JSON.parse('{{ data|tojson }}')
-		
+
+		var data_mus = ('{{ museums|tojson }}')
+		data_mus = JSON.parse(data_mus.slice(1,-1))
+
+		var data_docks = ('{{ docks|tojson }}')
+		data_docks = JSON.parse(data_docks)//.slice(1,-1))
+
 		//HANDLE MAP VIEWPORT SIZE
 		$('#mapid').height($(window).height() - 16)
 		window.onresize = function () {
 			$('#mapid').height($(window).height() - 16)    
 		}
 
+		 var private_token = 'sk.eyJ1IjoiaXJvbjUxMiIsImEiOiJjazl0dHIwaWkwbjF5M2VwY3lqMXhvdDNxIn0.hnRColE3LzVhgDIHdPEdnA'
+
 		//CREATING THE MAP
-		var mymap = L.map('mapid').setView([46.010478, 11.127805], 13);
+
+		var mymap = L.map('mapid').setView([38.888001, -77.039448], 13);
 		L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
 		    attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
 		    maxZoom: 18,
 		    id: 'mapbox/streets-v11',
 		    tileSize: 512,
 		    zoomOffset: -1,
-		    accessToken: 'sk.eyJ1IjoiaXJvbjUxMiIsImEiOiJjazl0dHIwaWkwbjF5M2VwY3lqMXhvdDNxIn0.hnRColE3LzVhgDIHdPEdnA'
+		    accessToken: private_token
 		}).addTo(mymap);
 
-		var blue = L.icon({
-		    iconUrl: '/images/Orange',
-		    iconSize: [25, 41],
-		    iconAnchor: [22, 94],
-		    popupAnchor: [-3, -76],
-		    shadowUrl: 'my-icon-shadow.png',
-		    shadowSize: [68, 95],
-		    shadowAnchor: [22, 94]
-		});
+		var lastl = null
+		mymap.on('click', function(e) {	
+			if (lastl != null) {
+				mymap.removeLayer(lastl)
+				lastl = null
+			}
 
-		var green = L.icon({
-		    iconUrl: '/images/Orange',
-		    iconSize: [25, 41],
-		    iconAnchor: [22, 94],
-		    popupAnchor: [-3, -76],
-		    shadowUrl: 'my-icon-shadow.png',
-		    shadowSize: [68, 95],
-		    shadowAnchor: [22, 94]
-		});
+			lastl = L.circle([e.latlng.lat, e.latlng.lng], {
+				color: 'black',
+			    fillColor: 'black',
+			    fillOpacity: 1,
+			    radius: 8
+			}).addTo(mymap);
 
-		var orange = L.icon({
-		    iconUrl: '/images/Orange',
-		    iconSize: [25, 41],
-		    iconAnchor: [22, 94],
-		    popupAnchor: [-3, -76],
-		    shadowUrl: 'my-icon-shadow.png',
-		    shadowSize: [68, 95],
-		    shadowAnchor: [22, 94]
-		});
 
-		var red = L.icon({
-		    iconUrl: '/images/Red',
-		    iconSize: [25, 41],
-		    iconAnchor: [22, 94],
-		    popupAnchor: [-3, -76],
-		    shadowUrl: 'my-icon-shadow.png',
-		    shadowSize: [68, 95],
-		    shadowAnchor: [22, 94]
-		});
+			if (lastr != null && lastl != null) {
+				//for some unknown reason, you must place lng before lat.. wtf
+				pathfinding(lastl._latlng.lng,lastl._latlng.lat,lastr._latlng.lng,lastr._latlng.lat,private_token,0)
+			}
+		})
+
+		var lastr = null
+		mymap.on('contextmenu', function(e) {	
+			if (lastr != null) {
+				mymap.removeLayer(lastr)
+				lastr = null
+			}
+
+			lastr = L.circle([e.latlng.lat, e.latlng.lng], {
+				color: 'blue',
+			    fillColor: 'blue',
+			    fillOpacity: 1,
+			    radius: 8
+			}).addTo(mymap);
+
+			if (lastr != null && lastl != null) {
+				pathfinding(lastl._latlng.lng,lastl._latlng.lat,lastr._latlng.lng,lastr._latlng.lat,private_token,0)
+			}
+		})
+		
 
 		var mmarker = []
-		data.museums.forEach(function(item, index) {
-			
-			var tmp = L.marker([item.latitude, item.logitude], {icon : red}).addTo(mymap);
-			tmp.on('click',function() {
-				tmp.bindPopup("<b>" + item.name + "</b><br>Sono un museo!")
-			})
-			
+		data_mus.museums.forEach(function(item, index) {
+			var fcolor = 'green'
+			if (item.permanently_closed) {
+				fcolor = 'red'
+			} 
+
+
+			var tmp = L.circle([item.latitude, item.longitude], {
+				color: fcolor,
+			    fillColor: fcolor,
+			    fillOpacity: 0.5,
+			    radius: 14
+			}).addTo(mymap);
+
+			ratingint = item.rating
+			ratingstr = ""
+
+			while (ratingint > 1) {
+				ratingstr = ratingstr + "\u2605"
+				ratingint = ratingint - 1
+			}
+
+			if (ratingint > 0.5)
+				ratingstr = ratingstr + "<span class='halftext'>\u2605</span>" 
+
+			tmp.bindPopup(
+				//"<b>" + item.name + "</b><br>Sono un museo!"
+				"<table><tr><td class='alignment'><b>Museum:</b></td><td><b>" + item.name + "</b></td></tr><tr><td class='alignment'>Website:</td><td>"+ item.website +"</td></tr><tr><td class='alignment'>Phone:</td><td>"+ item.phone_number +"</td></tr><tr><td colspan='2' class='rating'>"+ ratingstr +"</td></tr></table>"
+			);
+	        tmp.on('mouseover', function (e) {
+	            this.openPopup();
+	        });
+	        tmp.on('mouseout', function (e) {
+	            this.closePopup();
+	        });
+
 			mmarker.push(tmp)
 		})
 
-		var mark = L.marker([46.010478, 11.157805]).addTo(mymap);
-
 		var dmarker = []
-		data.docks.forEach(function(item, index) {
+		data_docks.docks.forEach(function(item, index) {
 			
-			var tmp = L.marker([item.latitude, item.lon], {icon : orange}).addTo(mymap);
-			tmp.on('click',function() {
-				tmp.bindPopup("<b>" + item.name + "</b><br>Sono un dock per le bici!")
-			})
+			var tmp = L.circle([item.latitude, item.longitude], {
+				 color: 'green',
+			    fillColor: '#0f0',
+			    fillOpacity: 0.5,
+			    radius: 10
+			}).addTo(mymap);
+
+			tmp.bindPopup("<b>" + item.name + "</b><br>Sono un dock per le bici!")
+	        tmp.on('mouseover', function (e) {
+	            this.openPopup();
+	        });
+	        tmp.on('mouseout', function (e) {
+	            this.closePopup();
+	        });
 			
 			dmarker.push(tmp)
 		})
 
+		var line = null
+		function pathfinding(start_lat,start_lon,end_lat,end_lon, token, type) {
+			var base_url = "https://api.mapbox.com/directions/v5/mapbox/" 
+
+			if (type == 0) {
+				//feet
+				base_url = base_url + "driving/"
+			} else if (type == 1) {
+				//bike
+				base_url = base_url + "cycling/"
+			} else {
+				//wrong call
+				return -1
+			}
+
+			base_url = base_url + start_lat + ',' + start_lon + ';'
+			base_url = base_url + end_lat + ',' + end_lon
+			base_url = base_url + "?geometries=geojson&access_token=" + token
+
+			console.log(base_url)
+
+			var req = new XMLHttpRequest();
+			req.open('GET', base_url, true);
+			req.onload = function() {
+				var json = JSON.parse(req.response);
+				console.log(json)
+
+    			if (line != null) {
+    				mymap.removeLayer(line)
+				}
+
+				reverted_coords = json.routes[0].geometry.coordinates
+				reverted_coords.forEach(function(item, index){
+					var tmp = item[0]
+					item[0] = item[1]
+					item[1] = tmp
+				})
+
+    			line = L.polyline(reverted_coords).addTo(mymap);
+			// add turn instructions here at the end
+			};
+			req.send();
+		}
 	</script>
 </body>
 </html>
+
+
+
 

@@ -1,15 +1,16 @@
-from flask import Flask, send_file, render_template
+from flask import Flask, render_template
+from museums import *
+import json
 
 app = Flask(__name__)
 
-
-@app.route('/images/<string:color>')
-def marker(color):
-	return send_file("./images/marker"+color+".png",mimetype='image/gif')
+#with open('museums.json') as file:
+#  data_mus = json.load(file)
+data_mus = elaborate()
+data_mus = json.dumps(data_mus)
 
 @app.route('/')
 def map():
-	data = {"museums":[{"name":"muse", "lat":"46.004093","lon":"11.118709"}, {"name":"stocazzo", "lat":"46.004193","lon":"11.128709"}, {"name":"terzo", "lat":"46.001492","lon":"11.131723"}],
-	"docks":[{"name":"dock1", "lat":"46.011977","lon":"11.135038"}, {"name":"dockbello", "lat":"46.022289","lon":"11.114299"}]}
-	return render_template('map.html', data=data)
+	docks = {"docks":[{"name":"dock1", "latitude":"46.011977","longitude":"11.135038"}, {"name":"dockbello", "latitude":"46.022289","longitude":"11.114299"}]}
+	return render_template('map.html', museums=data_mus, docks=docks)
 

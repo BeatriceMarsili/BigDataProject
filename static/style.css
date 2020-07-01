@@ -1,0 +1,33 @@
+body {
+    margin: 0;
+    padding: 0;
+}
+
+#map {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 100%;
+}
+
+.halftext {
+    text-transform: uppercase;
+    background: linear-gradient(to right, #000 0%, #000 49.9%, #FFF 50.1%, #FFF 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.rating {
+    text-align: center;
+    font-size: large;
+}
+
+.alignment {
+    text-align: right;
+    vertical-align: top
+}
+
+.mapboxgl-popup {
+    max-width: 400px;
+    font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
+}

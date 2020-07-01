@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Washington Bike - Big Data Project</title>
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+    <!--jQuery-->
+    <script type="text/javascript" src="https://code.jquery.com/jquery-3.5.1.slim.js"></script>
+    <!--Bootstrap-->
+    <link rel="stylesheet" type="text/css" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+    <script type="text/javascript" src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
+    <script src="https://api.mapbox.com/mapbox-gl-js/v1.11.0/mapbox-gl.js"></script>
+    <link href="https://api.mapbox.com/mapbox-gl-js/v1.11.0/mapbox-gl.css" rel="stylesheet" />
+    <script src='https://api.mapbox.com/mapbox.js/v3.3.1/mapbox.js'></script>
+    <link href='https://api.mapbox.com/mapbox.js/v3.3.1/mapbox.css' rel='stylesheet' />
+</head>
+
+<body>
+    <div id="map"></div>
+    <script>
+    var data_mus = ('{{ museums|tojson }}')
+    data_mus = JSON.parse(data_mus.slice(1, -1))
+
+    var data_docks = ('{{ docks|tojson }}')
+    data_docks = JSON.parse(data_docks) //.slice(1,-1))
+
+    var layerCount = 1
+    var private_token = 'pk.eyJ1IjoiaXJvbjUxMiIsImEiOiJjazl0dGt4d2UxaDY4M2VydHYwanF1NGxiIn0.9codAM9WBqwYXfx9dQDGbw'
+
+    mapboxgl.accessToken = private_token;
+    var map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/mapbox/streets-v11',
+        center: [-77.04, 38.907],
+        zoom: 11.15
+    });
+
+    //HANDLE MAP VIEWPORT SIZE
+    $('#map').height($(window).height() - 16)
+    window.onresize = function() {
+        $('#map').height($(window).height() - 16)
+    }
+
+    var lastl = {}
+    map.on('click', function(e) {
+        console.log(e)
+        if (!(Object.keys(lastl).length === 0 && lastl.constructor === Object)) {
+            map.removeLayer('lastl')
+            map.removeSource('lastl')
+        }
+
+        lastl = {
+            'lat': e.lngLat.lat,
+            'lng': e.lngLat.lng
+        }
+        layerCount = layerCount + 1
+        drawCircle('lastl', lastl.lat, lastl.lng, 8, 'black')
+
+
+        if ((!(Object.keys(lastr).length === 0 && lastr.constructor === Object)) && (!(Object.keys(lastl).length === 0 && lastl.constructor === Object))) {
+            //for some unknown reason, you must place lng before lat.. wtf
+            pathfinding(lastl.lng, lastl.lat, lastr.lng, lastr.lat, private_token, 1)
+        }
+    })
+
+    var lastr = {}
+    map.on('contextmenu', function(e) {
+        if (!(Object.keys(lastr).length === 0 && lastr.constructor === Object)) {
+            map.removeLayer('lastr')
+            map.removeSource('lastr')
+        }
+
+        lastr = {
+            'lat': e.lngLat.lat,
+            'lng': e.lngLat.lng
+        }
+        layerCount = layerCount + 1
+        drawCircle('lastr', lastr.lat, lastr.lng, 8, 'blue')
+
+        if ((!(Object.keys(lastr).length === 0 && lastr.constructor === Object)) && (!(Object.keys(lastl).length === 0 && lastl.constructor === Object))) {
+            pathfinding(lastl.lng, lastl.lat, lastr.lng, lastr.lat, private_token, 1)
+        }
+    })
+
+    var mmarker = []
+    data_mus.museums.forEach(function(item, index) {
+        var fcolor = 'green'
+        if (item.permanently_closed) {
+            fcolor = 'red'
+        }
+
+        drawCircle('layer'+layerCount,item.latitude,item.longitude,14,fcolor)
+
+        ratingint = item.rating
+        ratingstr = ""
+
+        while (ratingint > 1) {
+            ratingstr = ratingstr + "\u2605"
+            ratingint = ratingint - 1
+        }
+
+        if (ratingint > 0.5)
+            ratingstr = ratingstr + "<span class='halftext'>\u2605</span>"
+
+        var pop = new mapboxgl.Popup({
+			closeButton: false,
+			closeOnClick: false
+		});
+
+        pop.setLngLat(item.longitude,item.latitude)
+		pop.setHTML( "<table><tr><td class='alignment'><b>Museum:</b></td><td><b>" + item.name + "</b></td></tr><tr><td class='alignment'>Website:</td><td>" + item.website + "</td></tr><tr><td class='alignment'>Phone:</td><td>" + item.phone_number + "</td></tr><tr><td colspan='2' class='rating'>" + ratingstr + "</td></tr></table>")
+
+        tmp.on('mouseover', function(e) {
+			pop.addTo(map);
+        });
+        tmp.on('mouseout', function(e) {
+            pop.remove();
+        });
+
+        mmarker.push(tmp)
+    })
+
+
+    var firstLine = true
+
+    function pathfinding(start_lat, start_lon, end_lat, end_lon, token, type) {
+        var base_url = "https://api.mapbox.com/directions/v5/mapbox/"
+
+        if (type == 0) {
+            //feet
+            base_url = base_url + "walking/"
+        } else if (type == 1) {
+            //bike
+            base_url = base_url + "cycling/"
+        } else {
+            //wrong call
+            return -1
+        }
+
+        base_url = base_url + start_lat + ',' + start_lon + ';'
+        base_url = base_url + end_lat + ',' + end_lon
+        base_url = base_url + "?geometries=geojson&access_token=" + token
+
+        console.log(base_url)
+
+        var req = new XMLHttpRequest();
+        req.open('GET', base_url, true);
+        req.onload = function() {
+            var json = JSON.parse(req.response);
+            console.log(json)
+
+            if (firstLine) {
+                firstLine = false
+            } else {
+                map.removeLayer('route')
+                map.removeSource('route')
+            }
+
+            reverted_coords = json.routes[0].geometry.coordinates
+            drawLine('route', reverted_coords)
+        };
+        req.send();
+    }
+
+    function drawCircle(name, lat, lng, rad, color) {
+        map.addLayer({
+            id: name,
+            type: 'circle',
+            source: {
+                type: 'geojson',
+                data: {
+                    type: 'FeatureCollection',
+                    features: [{
+                        type: 'Feature',
+                        properties: {},
+                        geometry: {
+                            type: 'Point',
+                            coordinates: [lng, lat]
+                        }
+                    }]
+                }
+            },
+            paint: {
+                'circle-radius': rad,
+                'circle-color': color
+            }
+        });
+    }
+
+    function drawLine(name, path) {
+        map.addLayer({
+            'id': name,
+            'type': 'line',
+            'source': {
+                'type': 'geojson',
+                'data': {
+                    'type': 'Feature',
+                    'properties': {},
+                    'geometry': {
+                        'type': 'LineString',
+                        'coordinates': path
+                    }
+                }
+            },
+            'layout': {
+                'line-join': 'round',
+                'line-cap': 'round'
+            },
+            'paint': {
+                'line-color': '#888',
+                'line-width': 6
+            }
+        });
+
+
+    }
+    </script>
+</body>
+
+</html>
