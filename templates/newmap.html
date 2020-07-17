@@ -3,218 +3,372 @@
 
 <head>
     <title>Washington Bike - Big Data Project</title>
+    <!--rendering and css custom (static served) files-->
     <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
     <!--jQuery-->
-    <script type="text/javascript" src="https://code.jquery.com/jquery-3.5.1.slim.js"></script>
-    <!--Bootstrap-->
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <!--Bootstrap + Font Awesome-->
     <link rel="stylesheet" type="text/css" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
     <script type="text/javascript" src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
+    <!--Mapbox-->
     <script src="https://api.mapbox.com/mapbox-gl-js/v1.11.0/mapbox-gl.js"></script>
     <link href="https://api.mapbox.com/mapbox-gl-js/v1.11.0/mapbox-gl.css" rel="stylesheet" />
-    <script src='https://api.mapbox.com/mapbox.js/v3.3.1/mapbox.js'></script>
-    <link href='https://api.mapbox.com/mapbox.js/v3.3.1/mapbox.css' rel='stylesheet' />
 </head>
 
 <body>
+    <script type="text/javascript">
+        var closedvisible = true
+        var openvisible = true
+        var bikevisible = true
+
+        var mapposition = null
+        var museum_count = 2
+    </script>
     <div id="map"></div>
+    <div id="parent" class="container">
+        <div class="container control">
+            <div class="row text-center align-middle" style="height: 40px;">
+                <div class="col-sm" style="margin: auto; font-size: 18px;">
+                    Legend
+                </div>
+            </div>
+            <div class="row" style="height: 10px">
+                <hr class="col-sm-9" style="margin-top:0;margin-bottom:0">
+            </div>
+            <div id="closedrow" class="row text-left align-middle" onclick="(function() {
+                    if (closedvisible) {
+                        $('#closedrow').addClass('disabled')
+                        map.setLayoutProperty('closedmus', 'visibility', 'none');
+                    } else {
+                        $('#closedrow').removeClass('disabled')
+                        map.setLayoutProperty('closedmus', 'visibility', 'visible');
+                    }
+                    closedvisible = !closedvisible
+                })()" style="height: 30px;">
+                <div class="col-sm-3">
+                    <span id="red">⬤</span>
+                </div>
+                <div class="col-sm text-right">
+                    Closed Museums
+                </div>
+            </div>
+            <div id="openrow" class="row text-left align-middle" onclick="(function() {
+                    if (openvisible) {
+                        $('#openrow').addClass('disabled')
+                        map.setLayoutProperty('openmus', 'visibility', 'none');
+                    } else {
+                        $('#openrow').removeClass('disabled')
+                        map.setLayoutProperty('openmus', 'visibility', 'visible');
+                    }
+                    openvisible = !openvisible
+                })()" style="height: 30px;">
+                <div class="col-sm-3">
+                    <span id="green ">⬤</span>
+                </div>
+                <div class="col-sm text-right">
+                    Open Museums
+                </div>
+            </div>
+            <div id="bikerow" class="row text-left align-middle" onclick="(function() {
+                    if (bikevisible) {
+                        $('#bikerow').addClass('disabled')
+                        map.setLayoutProperty('bikedocks', 'visibility', 'none');
+                    } else {
+                        $('#bikerow').removeClass('disabled')
+                        map.setLayoutProperty('bikedocks', 'visibility', 'visible');
+                    }
+                    bikevisible = !bikevisible
+                })()" style="height: 30px;">
+                <div class="col-sm-3">
+                    <span>⬤</span>
+                </div>
+                <div class="col-sm text-right">
+                    Bike Stations
+                </div>
+            </div>
+        </div>
+        <div class="container control">
+            <div class="row text-center align-middle" style="height: 40px;">
+                <div class="col-sm" style="margin: auto; font-size: 18px;">
+                    # of Museums.
+                </div>
+            </div>
+            <div class="row" style="height: 10px">
+                <hr class="col-sm-9" style="margin-top:0;margin-bottom:0">
+            </div>
+            <div class="row text-center align-middle" style="height: 100px;">
+                <div class="row custombtn col-sm-3">
+                    <button type="button" class="btn btn-outline-danger btn-block" onclick="(function() {
+                        museum_count--;
+                        if (museum_count < 2)
+                            museum_count = 2
+                        $('#countdisp').html(museum_count)
+                    })()">-</button>
+                </div>
+                <div class="row custombtn col-sm-6">
+                    <button id="countdisp" type="button" class="btn btn-outline-secondary btn-block" disabled>2</button>
+                </div>
+                <div class="row custombtn col-sm-3">
+                    <button type="button" class="btn btn-outline-success btn-block" onclick="(function() {
+                        museum_count++;
+                        if (museum_count > 4)
+                            museum_count = 4
+                        $('#countdisp').html(museum_count)
+                    })()">+</button>
+                </div>
+            </div>
+            <div class="row text-center align-middle" style="height: 60px;">
+                <div class="col-sm" style="margin: auto;">
+                    <button type="button" class="btn btn-outline-primary btn-block" onclick='(function() {
+                        if (mapposition != null || 1) {
+                            var result = {}
+                            $.when(
+                                $.ajax({
+                                    url: "/path",
+                                    type: "get",
+                                    data: {
+                                        "count": museum_count,
+                                        //"lat": userlat
+                                        //"lon": userlon
+                                    },
+                                    success: function(response) {
+                                        //console.log(response)
+                                    },
+                                    error: function(xhr) {
+                                        //Do Something to handle error
+                                    }
+                                })
+                            ).then()
+                        }
+                    })()'>
+                        VISIT
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
     <script>
-    var data_mus = ('{{ museums|tojson }}')
-    data_mus = JSON.parse(data_mus.slice(1, -1))
-
-    var data_docks = ('{{ docks|tojson }}')
-    data_docks = JSON.parse(data_docks) //.slice(1,-1))
-
-    var layerCount = 1
-    var private_token = 'pk.eyJ1IjoiaXJvbjUxMiIsImEiOiJjazl0dGt4d2UxaDY4M2VydHYwanF1NGxiIn0.9codAM9WBqwYXfx9dQDGbw'
-
-    mapboxgl.accessToken = private_token;
-    var map = new mapboxgl.Map({
-        container: 'map',
-        style: 'mapbox://styles/mapbox/streets-v11',
-        center: [-77.04, 38.907],
-        zoom: 11.15
-    });
-
-    //HANDLE MAP VIEWPORT SIZE
-    $('#map').height($(window).height() - 16)
-    window.onresize = function() {
-        $('#map').height($(window).height() - 16)
-    }
-
-    var lastl = {}
-    map.on('click', function(e) {
-        console.log(e)
-        if (!(Object.keys(lastl).length === 0 && lastl.constructor === Object)) {
-            map.removeLayer('lastl')
-            map.removeSource('lastl')
-        }
-
-        lastl = {
-            'lat': e.lngLat.lat,
-            'lng': e.lngLat.lng
-        }
-        layerCount = layerCount + 1
-        drawCircle('lastl', lastl.lat, lastl.lng, 8, 'black')
-
-
-        if ((!(Object.keys(lastr).length === 0 && lastr.constructor === Object)) && (!(Object.keys(lastl).length === 0 && lastl.constructor === Object))) {
-            //for some unknown reason, you must place lng before lat.. wtf
-            pathfinding(lastl.lng, lastl.lat, lastr.lng, lastr.lat, private_token, 1)
-        }
-    })
-
-    var lastr = {}
-    map.on('contextmenu', function(e) {
-        if (!(Object.keys(lastr).length === 0 && lastr.constructor === Object)) {
-            map.removeLayer('lastr')
-            map.removeSource('lastr')
-        }
-
-        lastr = {
-            'lat': e.lngLat.lat,
-            'lng': e.lngLat.lng
-        }
-        layerCount = layerCount + 1
-        drawCircle('lastr', lastr.lat, lastr.lng, 8, 'blue')
-
-        if ((!(Object.keys(lastr).length === 0 && lastr.constructor === Object)) && (!(Object.keys(lastl).length === 0 && lastl.constructor === Object))) {
-            pathfinding(lastl.lng, lastl.lat, lastr.lng, lastr.lat, private_token, 1)
-        }
-    })
-
-    var mmarker = []
-    data_mus.museums.forEach(function(item, index) {
-        var fcolor = 'green'
-        if (item.permanently_closed) {
-            fcolor = 'red'
-        }
-
-        drawCircle('layer'+layerCount,item.latitude,item.longitude,14,fcolor)
-
-        ratingint = item.rating
-        ratingstr = ""
-
-        while (ratingint > 1) {
-            ratingstr = ratingstr + "\u2605"
-            ratingint = ratingint - 1
-        }
-
-        if (ratingint > 0.5)
-            ratingstr = ratingstr + "<span class='halftext'>\u2605</span>"
-
-        var pop = new mapboxgl.Popup({
-			closeButton: false,
-			closeOnClick: false
-		});
-
-        pop.setLngLat(item.longitude,item.latitude)
-		pop.setHTML( "<table><tr><td class='alignment'><b>Museum:</b></td><td><b>" + item.name + "</b></td></tr><tr><td class='alignment'>Website:</td><td>" + item.website + "</td></tr><tr><td class='alignment'>Phone:</td><td>" + item.phone_number + "</td></tr><tr><td colspan='2' class='rating'>" + ratingstr + "</td></tr></table>")
-
-        tmp.on('mouseover', function(e) {
-			pop.addTo(map);
-        });
-        tmp.on('mouseout', function(e) {
-            pop.remove();
-        });
-
-        mmarker.push(tmp)
-    })
-
-
-    var firstLine = true
-
-    function pathfinding(start_lat, start_lon, end_lat, end_lon, token, type) {
-        var base_url = "https://api.mapbox.com/directions/v5/mapbox/"
-
-        if (type == 0) {
-            //feet
-            base_url = base_url + "walking/"
-        } else if (type == 1) {
-            //bike
-            base_url = base_url + "cycling/"
-        } else {
-            //wrong call
-            return -1
-        }
-
-        base_url = base_url + start_lat + ',' + start_lon + ';'
-        base_url = base_url + end_lat + ',' + end_lon
-        base_url = base_url + "?geometries=geojson&access_token=" + token
-
-        console.log(base_url)
-
-        var req = new XMLHttpRequest();
-        req.open('GET', base_url, true);
-        req.onload = function() {
-            var json = JSON.parse(req.response);
-            console.log(json)
-
-            if (firstLine) {
-                firstLine = false
-            } else {
-                map.removeLayer('route')
-                map.removeSource('route')
-            }
-
-            reverted_coords = json.routes[0].geometry.coordinates
-            drawLine('route', reverted_coords)
-        };
-        req.send();
-    }
-
-    function drawCircle(name, lat, lng, rad, color) {
+    //Function definitions
+    function drawSimpleCircle(name, lat, lng, rad, opacity, color) {
         map.addLayer({
-            id: name,
-            type: 'circle',
-            source: {
-                type: 'geojson',
-                data: {
-                    type: 'FeatureCollection',
-                    features: [{
-                        type: 'Feature',
-                        properties: {},
-                        geometry: {
-                            type: 'Point',
-                            coordinates: [lng, lat]
+            'id': name,
+            'type': 'circle',
+            'source': {
+                'type': 'geojson',
+                'data': {
+                    'type': 'FeatureCollection',
+                    'features': [{
+                        'type': 'Feature',
+                        'properties': {},
+                        'geometry': {
+                            'type': 'Point',
+                            'coordinates': [lng, lat]
                         }
                     }]
                 }
             },
-            paint: {
+            'layout': {
+                'visibility': 'visible'
+            },
+            'paint': {
                 'circle-radius': rad,
+                'circle-opacity': opacity,
                 'circle-color': color
             }
         });
     }
 
-    function drawLine(name, path) {
+    function drawSourceCircle(name, source, rad, opacity, color) {
         map.addLayer({
             'id': name,
-            'type': 'line',
-            'source': {
-                'type': 'geojson',
-                'data': {
-                    'type': 'Feature',
-                    'properties': {},
-                    'geometry': {
-                        'type': 'LineString',
-                        'coordinates': path
-                    }
-                }
-            },
+            'type': 'circle',
+            'source': source,
             'layout': {
-                'line-join': 'round',
-                'line-cap': 'round'
+                'visibility': 'visible'
             },
             'paint': {
-                'line-color': '#888',
-                'line-width': 6
+                'circle-radius': rad,
+                'circle-opacity': opacity,
+                'circle-color': color
             }
         });
-
-
     }
+
+    var museums_data = null
+
+    function loadMuseums() {
+        var openPoints = {
+            'type': 'geojson',
+            'data': {
+                'type': 'FeatureCollection',
+                'features': []
+            }
+        }
+
+        var closedPoints = {
+            'type': 'geojson',
+            'data': {
+                'type': 'FeatureCollection',
+                'features': []
+            }
+        }
+
+        $.when(
+            $.ajax({
+                url: "/api/museums",
+                type: "get",
+                data: {},
+                success: function(response) {
+                    //console.log(response)
+                    museums_data = JSON.parse(response)
+                },
+                error: function(xhr) {
+                    //Do Something to handle error
+                }
+            })
+
+        ).then(function(x) {
+            var x = 0
+            museums_data.museums.forEach(function(item, index) {
+
+                ratingint = item.rating
+                ratingstr = ""
+
+                while (ratingint > 1) {
+                    ratingstr = ratingstr + "\u2605"
+                    ratingint = ratingint - 1
+                }
+
+                if (ratingint > 0.5)
+                    ratingstr = ratingstr + "<span class='halftext'>\u2605</span>"
+
+                var tmpmus = {
+                    'type': 'Feature',
+                    'properties': {
+                        'description': "<b>Museum: " + item.name + "</b><br>Website: " + item.website + "<br>Phone Number: " + item.phone_number + "<br><p class='text-center'>" + ratingstr + "</p>"
+                    },
+                    'geometry': {
+                        'type': 'Point',
+                        'coordinates': [item.longitude, item.latitude]
+                    }
+                }
+
+                if (item.permanently_closed) {
+                    closedPoints.data.features.push(tmpmus)
+                } else {
+                    openPoints.data.features.push(tmpmus)
+                }
+            })
+            map.addSource('openmus', openPoints)
+            map.addSource('closedmus', closedPoints)
+
+            drawSourceCircle('openmus', 'openmus', 10, 0.75, '#08AC00')
+            drawSourceCircle('closedmus', 'closedmus', 10, 0.75, '#DE0B1D')
+        })
+    }
+
+    var docks_data = null
+
+    function loadDocks() {
+        var docksPoints = {
+            'type': 'geojson',
+            'data': {
+                'type': 'FeatureCollection',
+                'features': []
+            }
+        }
+
+        $.when(
+            $.ajax({
+                url: "/api/docks",
+                type: "get",
+                data: {},
+                success: function(response) {
+                    //console.log(response)
+                    docks_data = JSON.parse(response)
+                },
+                error: function(xhr) {
+                    //Do Something to handle error
+                }
+            })
+        ).then(function(x) {
+            var x = 0
+            docks_data.docks.forEach(function(item, index) {
+                docksPoints.data.features.push({
+                    'type': 'Feature',
+                    'properties': {
+                        'description': "<b>Station: " + item.Station_Name + "</b><br>Bikes: " + item.num_bikes_available + "/" + item.capacity + "<br>Update: " + item.last_updated_date
+                    },
+                    'geometry': {
+                        'type': 'Point',
+                        'coordinates': [item.station_lon, item.station_lat]
+                    }
+                })
+            })
+            console.log('ok')
+            map.addSource('bikedocks', docksPoints)
+
+            drawSourceCircle('bikedocks', 'bikedocks', 8, 0.75, '#1179BA')
+        })
+    }
+
+    function bindpop(popup, source) {
+        map.on('mouseenter', source, function(e) {
+            // Change the cursor style as a UI indicator.
+            map.getCanvas().style.cursor = 'pointer';
+
+            var coordinates = e.features[0].geometry.coordinates.slice();
+            var description = e.features[0].properties.description;
+
+            // Ensure that if the map is zoomed out such that multiple
+            // copies of the feature are visible, the popup appears
+            // over the copy being pointed to.
+            while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+                coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+            }
+
+            // Populate the popup and set its coordinates
+            // based on the feature found.
+            popup
+                .setLngLat(coordinates)
+                .setHTML(description)
+                .addTo(map);
+        });
+
+        map.on('mouseleave', source, function() {
+            map.getCanvas().style.cursor = '';
+            popup.remove();
+        });
+    }
+
+
+    //CODE
+    mapboxgl.accessToken = ('{{ token }}');
+    var map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/mapbox/streets-v11',
+        center: [-77.04, 38.907],
+        zoom: 13
+    });
+
+    //HANDLE MAP VIEWPORT SIZE
+    $('#map').height($(window).height())
+    window.onresize = function() {
+        $('#map').height($(window).height())
+    }
+
+    loadMuseums()
+    loadDocks()
+
+    var popup = new mapboxgl.Popup({
+        closeButton: false,
+        closeOnClick: false
+    });
+
+    bindpop(popup, 'openmus')
+    bindpop(popup, 'closedmus')
+    bindpop(popup, 'bikedocks')
     </script>
 </body>
 

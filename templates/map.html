@@ -1,50 +1,173 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-	<title>Washington Bike - Big Data Project</title>
-	
-	<!--Leaflet (map render)-->
-	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css" />
-	<script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"></script>
-
-	<!--jQuery-->
-	<script src="https://code.jquery.com/jquery-3.5.1.slim.js"></script>
-
-	<!--Bootstrap-->
+    <title>Washington Bike - Big Data Project</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+    <!--Leaflet (map render)-->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"></script>
+    <!--jQuery-->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.js"></script>
+    <!--Bootstrap-->
     <link rel="stylesheet" type="text/css" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
     <script type="text/javascript" src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
 </head>
+
 <body>
-	<div id="mapid"></div>
+    <div id="mapid"></div>
+    <div id="control" class="container">
+    	<div class="row text-center align-middle" style="height: 60px;">
+            <div class="col-sm" style="margin: auto;">
+                <h2>Legend</h2>
+            </div>
+        </div>
+    	<div class="row text-left align-middle" style="height: 30px;">
+            <div class="col-sm-2"></div>
+            <div class="col-sm" style="margin: auto;">
+                <h6><span class="red">⬤</span>  Closed Museums</h6>
+            </div>
+        </div>
+        <div class="row text-left align-middle" style="height: 30px;">
+            <div class="col-sm-2"></div>
+            <div class="col-sm" style="margin: auto;">
+                <h6><span class="green">⬤</span>  Open Museums</h6>
+            </div>
+        </div>
+        <div class="row text-left align-middle" style="height: 30px;">
+            <div class="col-sm-2"></div>
+            <div class="col-sm" style="margin: auto;">
+                <h6><span class="blue">⬤</span>  Bike Docks</h6>
+            </div>
+        </div>
 
-	<script type="text/javascript">
+        <div class="row text-center align-middle" style="height: 60px;">
+            <div class="col-sm" style="margin: auto;">
+                <h2>N° of museums</h2>
+            </div>
+        </div>
+        <div class="row text-center align-middle" style="height: 100px;">
+            <div class="col-sm" style="margin: auto;">
+                <button type="button" class="btn btn-outline-danger btn-block" onclick="(function() {
+		      	if (museum_count > 2) {
+		      		museum_count = museum_count -1
+		      	}
+				$('#museum_count').html(museum_count)
+		      })()">
+                    <h1>-</h1>
+                </button>
+            </div>
+            <div class="col-sm" style="margin: auto;">
+                <h1 id="museum_count">
+                    <h1>
+            </div>
+            <div class="col-sm" style="margin: auto;">
+                <button type="button" class="btn btn-outline-success btn-block" onclick="(function() {
+		      	if (museum_count < 4) {
+		      		museum_count = museum_count +1
+		      	}
+				$('#museum_count').html(museum_count)
+		      	})()">
+                    <h1>+</h1>
+                </button>
+            </div>
+        </div>
+        <div class="row text-center align-middle" style="height: 80px;">
+        	<div class="col-sm" style="margin: auto;">
+	            <button type="button" class="btn btn-outline-primary btn-block" onclick="(function() {
+					$('#hidlat')[0].value = mymap.getCenter().lat
+					$('#hidlon')[0].value = mymap.getCenter().lng
+					$('#hidzoom')[0].value = mymap.getZoom()
+					$('#hidcount')[0].value = museum_count
 
-		var data_mus = ('{{ museums|tojson }}')
-		data_mus = JSON.parse(data_mus.slice(1,-1))
+					if (user_position != null) {
+						$('#hiduserlat')[0].value = user_position._latlng.lat
+						$('#hiduserlon')[0].value = user_position._latlng.lng
 
-		var data_docks = ('{{ docks|tojson }}')
-		data_docks = JSON.parse(data_docks)//.slice(1,-1))
+						$('#controlform').submit()
+					} else {
+						$('#warning').removeClass('blink_me')
+						$('#warning').addClass('blink_me')
+					}
+			      })()">
+	                <h3>VISIT</h3>
+	            </button>
+            </div>
+        </div>
+        <div class="row text-center align-middle" style="height: 30px;">
+            <div id="warning" class="col-sm" style="margin: auto;">
+                click on the map to add a starting point
+            </div>
+        </div>
 
-		//HANDLE MAP VIEWPORT SIZE
-		$('#mapid').height($(window).height() - 16)
-		window.onresize = function () {
-			$('#mapid').height($(window).height() - 16)    
-		}
+        <form id="controlform" method="post">
+            <input type="hidden" name="hidlat" id="hidlat" value="ciao">
+            <input type="hidden" name="hidlon" id="hidlon">
+            <input type="hidden" name="hidzoom" id="hidzoom">
+            <input type="hidden" name="hiduserlat" id="hiduserlat">
+            <input type="hidden" name="hiduserlon" id="hiduserlon">
+            <input type="hidden" name="hidcount" id="hidcount">
+        </form>
+    </div>
+    <script type="text/javascript">
+    //DEFINE SOME VARIABLES
+    var museum_count = 2
 
-		 var private_token = 'sk.eyJ1IjoiaXJvbjUxMiIsImEiOiJjazl0dHIwaWkwbjF5M2VwY3lqMXhvdDNxIn0.hnRColE3LzVhgDIHdPEdnA'
+    //GET ALL PARAMETERS
+    var data_view = ('{{ view|tojson }}')
+    data_view = JSON.parse(data_view.slice(1, -1))
 
-		//CREATING THE MAP
+    if (data_view.museum_count != undefined) {
+    	museum_count = data_view.museum_count
+    }
 
-		var mymap = L.map('mapid').setView([38.888001, -77.039448], 13);
-		L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
-		    attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
-		    maxZoom: 18,
-		    id: 'mapbox/streets-v11',
-		    tileSize: 512,
-		    zoomOffset: -1,
-		    accessToken: private_token
-		}).addTo(mymap);
+    $('#museum_count').html(museum_count)
 
+    var data_mus = ('{{ museums|tojson }}')
+    data_mus = JSON.parse(data_mus.slice(1, -1))
+
+    var data_docks = ('{{ docks|tojson }}')
+    data_docks = JSON.parse(data_docks.slice(1, -1))
+    data_docks = JSON.parse(data_docks)
+    console.log(data_docks)
+
+    //HANDLE MAP VIEWPORT SIZE
+    $('#mapid').height($(window).height())
+    //$('#control').height($(window).height() - 40)
+    window.onresize = function() {
+        $('#mapid').height($(window).height())
+        //$('#control').height($(window).height() - 40)
+    }
+
+    var private_token = 'sk.eyJ1IjoiaXJvbjUxMiIsImEiOiJjazl0dHIwaWkwbjF5M2VwY3lqMXhvdDNxIn0.hnRColE3LzVhgDIHdPEdnA'
+
+    //CREATING THE MAP
+    var mymap = L.map('mapid').setView([data_view.lat, data_view.lon], data_view.zoom);
+    L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
+        attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+        maxZoom: 18,
+        id: 'mapbox/streets-v11',
+        tileSize: 512,
+        zoomOffset: -1,
+        accessToken: private_token
+    }).addTo(mymap);
+
+
+    var data_path
+    if(data_view.path != undefined) {
+    	data_path = ('{{ path|tojson }}')
+    	data_path = JSON.parse(data_path.slice(1, -1))
+
+        var close = L.circle([data_path.lat, data_path.lon], {
+            color: 'yellow',
+            fillColor: 'yellow',
+            fillOpacity: 1,
+            radius: 15
+        }).addTo(mymap);
+    }
+
+    /*
+		//PATHFINDING TEST
 		var lastl = null
 		mymap.on('click', function(e) {	
 			if (lastl != null) {
@@ -84,70 +207,9 @@
 				pathfinding(lastl._latlng.lng,lastl._latlng.lat,lastr._latlng.lng,lastr._latlng.lat,private_token,0)
 			}
 		})
-		
 
-		var mmarker = []
-		data_mus.museums.forEach(function(item, index) {
-			var fcolor = 'green'
-			if (item.permanently_closed) {
-				fcolor = 'red'
-			} 
-
-
-			var tmp = L.circle([item.latitude, item.longitude], {
-				color: fcolor,
-			    fillColor: fcolor,
-			    fillOpacity: 0.5,
-			    radius: 14
-			}).addTo(mymap);
-
-			ratingint = item.rating
-			ratingstr = ""
-
-			while (ratingint > 1) {
-				ratingstr = ratingstr + "\u2605"
-				ratingint = ratingint - 1
-			}
-
-			if (ratingint > 0.5)
-				ratingstr = ratingstr + "<span class='halftext'>\u2605</span>" 
-
-			tmp.bindPopup(
-				//"<b>" + item.name + "</b><br>Sono un museo!"
-				"<table><tr><td class='alignment'><b>Museum:</b></td><td><b>" + item.name + "</b></td></tr><tr><td class='alignment'>Website:</td><td>"+ item.website +"</td></tr><tr><td class='alignment'>Phone:</td><td>"+ item.phone_number +"</td></tr><tr><td colspan='2' class='rating'>"+ ratingstr +"</td></tr></table>"
-			);
-	        tmp.on('mouseover', function (e) {
-	            this.openPopup();
-	        });
-	        tmp.on('mouseout', function (e) {
-	            this.closePopup();
-	        });
-
-			mmarker.push(tmp)
-		})
-
-		var dmarker = []
-		data_docks.docks.forEach(function(item, index) {
-			
-			var tmp = L.circle([item.latitude, item.longitude], {
-				 color: 'green',
-			    fillColor: '#0f0',
-			    fillOpacity: 0.5,
-			    radius: 10
-			}).addTo(mymap);
-
-			tmp.bindPopup("<b>" + item.name + "</b><br>Sono un dock per le bici!")
-	        tmp.on('mouseover', function (e) {
-	            this.openPopup();
-	        });
-	        tmp.on('mouseout', function (e) {
-	            this.closePopup();
-	        });
-			
-			dmarker.push(tmp)
-		})
-
-		var line = null
+		//PATHFINING FUNCTION THROUGH MAPBOX AP
+I		var line = null
 		function pathfinding(start_lat,start_lon,end_lat,end_lon, token, type) {
 			var base_url = "https://api.mapbox.com/directions/v5/mapbox/" 
 
@@ -186,14 +248,104 @@
 				})
 
     			line = L.polyline(reverted_coords).addTo(mymap);
-			// add turn instructions here at the end
 			};
 			req.send();
-		}
-	</script>
+		
+		*/
+
+    //SETUP THE MARKERS (OPEN/CLOSED MUSEUMS)
+    var mmarker = []
+    data_mus.museums.forEach(function(item, index) {
+        var fcolor = 'green'
+        if (item.permanently_closed) {
+            fcolor = 'red'
+        }
+
+
+        var tmp = L.circle([item.latitude, item.longitude], {
+            color: fcolor,
+            fillColor: fcolor,
+            fillOpacity: 0.5,
+            radius: 14
+        }).addTo(mymap);
+
+        ratingint = item.rating
+        ratingstr = ""
+
+        while (ratingint > 1) {
+            ratingstr = ratingstr + "\u2605"
+            ratingint = ratingint - 1
+        }
+
+        if (ratingint > 0.5)
+            ratingstr = ratingstr + "<span class='halftext'>\u2605</span>"
+
+        tmp.bindPopup(
+            //"<b>" + item.name + "</b><br>Sono un museo!"
+            "<table><tr><td class='alignment'><b>Museum:</b></td><td><b>" + item.name + "</b></td></tr><tr><td class='alignment'>Website:</td><td>" + item.website + "</td></tr><tr><td class='alignment'>Phone:</td><td>" + item.phone_number + "</td></tr><tr><td colspan='2' class='rating'>" + ratingstr + "</td></tr></table>"
+        );
+        tmp.on('mouseover', function(e) {
+            this.openPopup();
+        });
+        tmp.on('mouseout', function(e) {
+            this.closePopup();
+        });
+
+        mmarker.push(tmp)
+    })
+
+    //SETUP THE MARKERS (DOCKS)
+    var dmarker = []
+    var item = data_docks[1]
+    var i = 1
+    //here we know that we have at most 1000 different docks
+    while (i < 1000) {
+        if (item != undefined) {
+            var tmp = L.circle([item.station_lat, item.station_lon], {
+                color: 'blue',
+                fillColor: '#00f',
+                fillOpacity: 0.5,
+                radius: 10
+            }).addTo(mymap);
+
+            tmp.bindPopup("<table><tr><td class='alignment'><b>Station:</b></td><td><b>" + item.Station_Name + "</b></td></tr><tr><td class='alignment'>Bikes:</td><td>" + item.num_bikes_available + "/" + item.capacity + "</td></tr><tr><td class='alignment'>Update:</td><td>" + item.last_updated_date + "</td></tr></table>")
+            tmp.on('mouseover', function(e) {
+                this.openPopup();
+            });
+            tmp.on('mouseout', function(e) {
+                this.closePopup();
+            });
+
+            dmarker.push(tmp)
+        }
+        i = i + 1
+        item = data_docks[i]
+    }
+
+    var user_position = null
+
+    if (data_view.user_lat != undefined && data_view.user_lon != undefined) {
+    	user_position = L.circle([data_view.user_lat, data_view.user_lon], {
+            color: 'black',
+            fillColor: 'black',
+            fillOpacity: 1,
+            radius: 6
+        }).addTo(mymap);
+    }
+
+    mymap.on('click', function(e) {
+        if (user_position != null) {
+            mymap.removeLayer(user_position)
+        }
+
+        user_position = L.circle([e.latlng.lat, e.latlng.lng], {
+            color: 'black',
+            fillColor: 'black',
+            fillOpacity: 1,
+            radius: 6
+        }).addTo(mymap);
+    })
+    </script>
 </body>
+
 </html>
-
-
-
-

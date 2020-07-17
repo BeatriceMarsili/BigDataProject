@@ -10,6 +10,23 @@ body {
     width: 100%;
 }
 
+#parent {
+    position: absolute;
+    padding:0;
+    width: 200px !important;
+    top: 20px;
+    right: 20px;
+}
+
+.control {
+    font: 15px 'Helvetica Neue', Arial, Helvetica, sans-serif;
+    position: relative;
+    margin-bottom: 15px;
+    z-index: 1000;
+    border-radius: 5px;
+    background-color: #fff;
+}
+
 .halftext {
     text-transform: uppercase;
     background: linear-gradient(to right, #000 0%, #000 49.9%, #FFF 50.1%, #FFF 100%);
@@ -27,7 +44,28 @@ body {
     vertical-align: top
 }
 
+#closedrow > div > span {
+    color:#DE0B1D;
+}
+
+#openrow > div > span {
+    color:#08AC00;
+}
+
+#bikerow > div > span {
+    color:#1179BA;
+}
+
+.disabled > div, .disabled > div > span{
+    color:#DCDCDC !important;
+}
+
+.custombtn {
+    padding:2px !important;
+    margin-left:0 !important;
+    margin-right:0 !important;
+}
+
 .mapboxgl-popup {
-    max-width: 400px;
-    font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
+    max-width: none !important;
 }

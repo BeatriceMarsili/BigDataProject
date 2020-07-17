@@ -27,11 +27,18 @@ $	pip freeze > environment.txt
 All the private API keys and sensitive data are to be update inside a file *privates.py*. Again, anything won't be saved on the repo thanks to the *.gitignore* settings. All the configuration parameters are to be saved in the file *utilities.py* instead.
 
 ## Startup
-Before working on anything, start the virtual environment:
+Before working on anything, set the application name and start the virtual environment:
 
 `
+$	export FLASK_APP=server
 $ 	. virtual/bin/activate 
-` 
+`
+
+To start the server run:
+`
+$	flask run
+`
+and reach http://localhost:5000 on your favourite browser
 
 While in the virtual environment and module packet downloaded will be stored locally. The changes to any file, however, will persist. To quit the virtual environment just type:
 

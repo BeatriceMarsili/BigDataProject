@@ -1,16 +1,37 @@
-from flask import Flask, render_template
+from flask import Flask, request, render_template
 from museums import *
+from docks import *
+from closest_station import *
+from privates import *
 import json
 
 app = Flask(__name__)
 
-#with open('museums.json') as file:
-#  data_mus = json.load(file)
-data_mus = elaborate()
-data_mus = json.dumps(data_mus)
-
 @app.route('/')
-def map():
-	docks = {"docks":[{"name":"dock1", "latitude":"46.011977","longitude":"11.135038"}, {"name":"dockbello", "latitude":"46.022289","longitude":"11.114299"}]}
-	return render_template('map.html', museums=data_mus, docks=docks)
+def serveMap():
+	return render_template('newmap.html', token=mapbox_token)
 
+@app.route('/api/museums')
+def serveMuseums():
+	#data1 = request.args.get('somedata1')
+
+	data_mus = elaborate()
+	data_mus = json.dumps(data_mus)
+
+	return data_mus
+
+@app.route('/api/docks')
+def serveDocks():
+	#data1 = request.args.get('somedata1')
+
+	data_docks = join_info_mask()
+	data_docks = json.dumps(data_docks)
+
+	return data_docks
+
+@app.route('/path')
+def pathfinder():
+	count = request.args.get('count')
+
+	print(count)
+	return "0"
