@@ -161,7 +161,7 @@
 159,169,Smithsonian-National Mall / Jefferson Dr & 12th St SW,"['KEY', 'CREDITCARD']",38.888767,-77.02858,35,42,classic
 160,170,George Mason Dr & Wilson Blvd,"['KEY', 'CREDITCARD']",38.87887,-77.1207,15,41,classic
 161,171,6th St & Indiana Ave NW,"['KEY', 'CREDITCARD']",38.894573,-77.01994,19,42,classic
-162,172,N Veitch St & Key Blvd,"['KEY', 'CREDITCARD']",38.893237,-77.086063,11,41,classic
+162,172,N Veitch St & Key Blvd,"['KEY', 'CREDITCARD']",38.893237,-77.086063,10,41,classic
 163,173,Lee Hwy & N Adams St,"['KEY', 'CREDITCARD']",38.89593,-77.089006,19,41,classic
 164,174,15th St & N Scott St,"['KEY', 'CREDITCARD']",38.89054,-77.08095,11,41,classic
 165,175,Washington Blvd & 7th St N,"['KEY', 'CREDITCARD']",38.88081,-77.090792,11,41,classic
@@ -495,7 +495,7 @@
 493,524,Baltimore Ave & Jefferson St,"['KEY', 'CREDITCARD']",38.95548,-76.940133,15,133,classic
 494,525,Perry & 35th St,"['KEY', 'CREDITCARD']",38.936213,-76.960054,15,133,classic
 495,526,Rockville Pike & Meeting St,"['KEY', 'CREDITCARD']",39.050539,-77.115212,15,43,classic
-496,527,Potomac Ave & Half St SW,"['KEY', 'CREDITCARD']",38.870201045557025,-77.01083689928055,23,42,classic
+496,527,Potomac Ave & Half St SW,"['KEY', 'CREDITCARD']",38.8704067414805,-77.01044663786888,23,42,classic
 497,529,Crystal Dr & Potomac Ave,"['KEY', 'CREDITCARD']",38.848304,-77.05122,11,41,classic
 498,530,Largo Rd & Campus Way / Prince Georges's Comm Col,"['KEY', 'CREDITCARD']",38.88994,-76.825535,15,133,classic
 499,531,Stanton Square SE,"['KEY', 'CREDITCARD']",38.855004,-76.984512,19,42,classic

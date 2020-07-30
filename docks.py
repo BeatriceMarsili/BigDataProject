@@ -3,13 +3,13 @@
 
 # In[3]:
 
-
 import json
 import pandas as pd
 import urllib.request
 from datetime import datetime, timezone
 import pytz
 
+from utilities import *
 
 # In[28]:
 
@@ -33,8 +33,11 @@ def extract_station():
                      df_station["capacity"], 
                      df_station["region_id"],
                      df_station["station_type"]], axis=1)
-    station.to_csv("Station_information.csv")
-    station.to_json("Station_information.json", orient="index")
+    
+    if station_information_csv:
+        station.to_csv("station_information.csv")
+    if station_information_json:
+        station.to_json("station_information.json", orient="index")
     return station.to_json(orient="index")
 
 # In[29]:
@@ -66,8 +69,10 @@ def extract_status():
                     df_status["is_renting"], 
                     df_status["is_returning"],
                     df_status["last_updated_date"]], axis=1)
-    status.to_csv("Station_status.csv")
-    status.to_json("Station_status.json", orient="index")
+    if station_status_csv:
+        status.to_csv("station_status.csv")
+    if station_status_json:
+        status.to_json("station_status.json", orient="index")
     return status.to_json(orient="index")
 
 
@@ -78,9 +83,9 @@ def join_info():
     "Joins data regarding informations on stations with data regarding their status. Produces a csv and a json."
     extract_station()
     extract_status()
-    status=pd.read_csv("Station_status.csv")
+    status=pd.read_csv("station_status.csv")
     status.drop(columns=["Unnamed: 0"])
-    stations=pd.read_csv("Station_information.csv")
+    stations=pd.read_csv("station_information.csv")
     stations.drop(columns=["Unnamed: 0"])
     station_status = status.set_index("station_id").join(stations.set_index("station_id"), on=['station_id'], how='right' , lsuffix='_left', rsuffix='_right')
     station_status = station_status.rename(columns={'name': 'Station_Name'})
@@ -97,11 +102,13 @@ def join_info():
                              station_status["last_updated_date"]], axis=1)
     quick_look = quick_look.rename(columns={'lat': 'station_lat',
                                          'lon': 'station_lon'})
-    quick_look.to_csv("Stat_complete_info.csv")
-    quick_look.to_json("Stat_complete_info.json",orient="index")
+    if station_complete_info_csv:
+        quick_look.to_csv("station_complete_info.csv")
+    if station_complete_info_json:
+        quick_look.to_json("station_complete_info.json",orient="index")
     return quick_look.to_json(orient="index")
 
-def join_info_mask():
+def join_station_info_masked():
     pyobj = json.loads(join_info())
 
     docks_final = {"docks":[]}

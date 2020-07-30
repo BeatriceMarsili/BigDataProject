@@ -11,7 +11,7 @@ import hashlib
 #To enlarge the dataset just add more urls and check that they follow the same format.
 #If not, write some code to modifiy those data accodingly:
 #OBJECTID - (NAME) - ALT_NAME - LABEL - (MAR_MATCHADDRESS) - MAR_XCOORD - MAR_YCOORD - (MAR_LONGITUDE) - (MAR_LATITUDE) - MARID
-def elaborate():
+def museums_info():
 	museums_url = [
 		"https://opendata.arcgis.com/datasets/2e65fc16edc3481989d2cc17e6f8c533_54.geojson"
 	]
@@ -136,9 +136,9 @@ def elaborate():
 			print("Data fetching complete without errors")
 		else:
 			print("Data fetching complete. " + str(errors) + " errors found. Data might be incomplete")
-
-	with open("museums.json", 'w+') as json_file:
-	    json.dump(museums_clean, json_file)
+	if museums_json:
+		with open("museums.json", 'w+') as json_file:
+			json.dump(museums_clean, json_file)
 
 	return museums_clean
 

@@ -1,7 +1,6 @@
 from flask import Flask, request, render_template
 from museums import *
 from docks import *
-from closest_station import *
 from privates import *
 import json
 
@@ -15,7 +14,7 @@ def serveMap():
 def serveMuseums():
 	#data1 = request.args.get('somedata1')
 
-	data_mus = elaborate()
+	data_mus = museums_info()
 	data_mus = json.dumps(data_mus)
 
 	return data_mus
@@ -24,7 +23,7 @@ def serveMuseums():
 def serveDocks():
 	#data1 = request.args.get('somedata1')
 
-	data_docks = join_info_mask()
+	data_docks = join_station_info_masked()
 	data_docks = json.dumps(data_docks)
 
 	return data_docks
