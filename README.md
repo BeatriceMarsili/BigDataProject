@@ -14,6 +14,7 @@ $	pyhton3 - m venv virtual
 `
 $ 	. virtual/bin/activate
 `
+
 `
 $	pip install -r environment
 `
@@ -34,6 +35,7 @@ Before working on anything, set the application name and start the virtual envir
 `
 $	export FLASK_APP=server
 `
+
 `
 $ 	. virtual/bin/activate 
 `
