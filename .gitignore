@@ -1,3 +1,11 @@
 virtual/
 __pycache__/
 privates.py
+
+museums.json
+station_information.csv
+station_information.json
+station_status.csv
+station_status.json
+station_complete_info.csv
+station_complete_info.json
