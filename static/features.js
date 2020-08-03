@@ -22,9 +22,17 @@ function drawSimpleCircle(map, name, lat, lng, rad, opacity, color) {
         'paint': {
             'circle-radius': rad,
             'circle-opacity': opacity,
-            'circle-color': color
+            'circle-color': color,
+            'circle-stroke-color': 'black',
+            'circle-stroke-width': 1,
+            'circle-stroke-opacity': 0.8
         }
     });
+}
+
+function removeLayer(map, name) {
+    map.removeLayer(name)
+    map.removeSource(name)
 }
 
 function drawSourceCircle(map, name, source, rad, opacity, color) {
@@ -38,7 +46,10 @@ function drawSourceCircle(map, name, source, rad, opacity, color) {
         'paint': {
             'circle-radius': rad,
             'circle-opacity': opacity,
-            'circle-color': color
+            'circle-color': color,
+            'circle-stroke-color': 'black',
+            'circle-stroke-width': 1,
+            'circle-stroke-opacity': 0.8
         }
     });
 }
@@ -154,7 +165,7 @@ function loadDocks(map) {
                 }
             })
         })
-        console.log('ok')
+        //console.log('ok')
         map.addSource('bikedocks', docksPoints)
 
         drawSourceCircle(map, 'bikedocks', 'bikedocks', 8, 0.75, '#1179BA')
@@ -188,4 +199,70 @@ function bindpop(map, popup, source) {
         map.getCanvas().style.cursor = '';
         popup.remove();
     });
+}
+
+route = null;
+function plot_path(map, coordinates, token) {
+    var base_url = "https://api.mapbox.com/directions/v5/mapbox/cycling/"
+
+    coordinates.forEach(function(item, index) {
+        base_url = base_url + item[0] + "," + item[1] + ";"
+    })
+
+    var final = base_url.slice(0, -1)
+    var result = {}
+    var tot = coordinates.length - 1
+
+    $.when(
+        $.ajax({
+            url: final,
+            type: "get",
+            data: {
+                waypoints: "0;" + tot,
+                geometries: "geojson",
+                access_token: token
+            },
+            success: function(response) {
+                result = response
+            },
+            error: function(xhr) {
+                //Do Something to handle error
+            }
+        })
+    ).then(function() {
+        console.log(result)
+        if (route != null) {
+            removeLayer(map,"route")
+        }
+
+        route = result.routes[0].geometry.coordinates
+        drawLine(map, "route", route , "black", 5)
+    })
+}
+
+function drawLine(map, name, coordinates, color, width) {
+    map.addLayer({
+        'id': name,
+        'type': 'line',
+        'source': {
+            'type': 'geojson',
+            'data': {
+                'type': 'Feature',
+                'properties': {},
+                'geometry': {
+                    'type': 'LineString',
+                    'coordinates': coordinates
+                }
+            }
+        },
+        'layout': {
+            'line-join': 'round',
+            'line-cap': 'round'
+        },
+        'paint': {
+            'line-color': color,
+            'line-width': width,
+            'line-opacity': 0.6
+        }
+    })
 }

@@ -1,6 +1,7 @@
 from flask import Flask, request, render_template
 from museums import *
 from docks import *
+from pathfinder import *
 from privates import *
 import json
 
@@ -30,7 +31,11 @@ def serveDocks():
 
 @app.route('/path')
 def pathfinder():
-	count = request.args.get('count')
 
-	print(count)
-	return "0"
+	count = int(request.args.get('count'))
+	lat = float(request.args.get('lat'))
+	lon = float(request.args.get('lon'))
+
+	print("pathfinding from..." + str(lat) + ", " + str(lon))
+
+	return user_path(lat,lon,count)

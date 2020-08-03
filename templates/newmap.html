@@ -18,12 +18,12 @@
 
 <body>
     <script type="text/javascript">
-        var closedvisible = true
-        var openvisible = true
-        var bikevisible = true
+    var closedvisible = true
+    var openvisible = true
+    var bikevisible = true
 
-        var mapposition = null
-        var museum_count = 2
+    var mapposition = null
+    var museum_count = 2
     </script>
     <div id="map"></div>
     <div id="parent" class="container">
@@ -121,25 +121,40 @@
             <div class="row text-center align-middle" style="height: 60px;">
                 <div class="col-sm" style="margin: auto;">
                     <button type="button" class="btn btn-outline-primary btn-block" onclick='(function() {
-                        if (mapposition != null || 1) {
-                            var result = {}
+                        if (last_pos != null ) {
                             $.when(
                                 $.ajax({
                                     url: "/path",
                                     type: "get",
                                     data: {
                                         "count": museum_count,
-                                        //"lat": userlat
-                                        //"lon": userlon
+                                        "lat": last_pos[0],
+                                        "lon": last_pos[1]
                                     },
                                     success: function(response) {
-                                        //console.log(response)
+                                        path = response
                                     },
                                     error: function(xhr) {
                                         //Do Something to handle error
                                     }
                                 })
-                            ).then()
+                            ).then(
+                                function( data, textStatus, jqXHR ) {
+                                    console.log(path)
+                                    
+                                    var coords = []
+                                    coords.push([last_pos[1],last_pos[0]])
+                                    coords.push(path["1_station"][0])
+
+                                    for (var i = 1 ; i <= museum_count; i++) {
+                                        coords.push(path[i+"_museum_station"][0])
+                                        coords.push(path[i+"_museum"][0])
+                                        coords.push(path[i+"_museum_station"][0])
+                                    }
+
+                                    plot_path(map, coords, mapboxgl.accessToken )
+                                }
+                            )
                         }
                     })()'>
                         VISIT
@@ -149,36 +164,48 @@
         </div>
     </div>
     <script type="text/javascript" src="{{ url_for('static', filename='features.js') }}">
-        //FUNCTION DEFINITION
+    //FUNCTION DEFINITION
     </script>
-    
     <script>
-        //CODE
-        mapboxgl.accessToken = ('{{ token }}');
-        var map = new mapboxgl.Map({
-            container: 'map',
-            style: 'mapbox://styles/mapbox/streets-v11',
-            center: [-77.04, 38.907],
-            zoom: 13
-        });
+    //CODE
+    var path = null
 
-        //HANDLE MAP VIEWPORT SIZE
+    mapboxgl.accessToken = ('{{ token }}');
+    var map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/mapbox/streets-v11',
+        center: [-77.04, 38.907],
+        zoom: 13
+    });
+
+    //HANDLE MAP VIEWPORT SIZE
+    $('#map').height($(window).height())
+    window.onresize = function() {
         $('#map').height($(window).height())
-        window.onresize = function() {
-            $('#map').height($(window).height())
+    }
+
+    loadMuseums(map)
+    loadDocks(map)
+
+    var popup = new mapboxgl.Popup({
+        closeButton: false,
+        closeOnClick: false
+    });
+
+    bindpop(map, popup, 'openmus')
+    bindpop(map, popup, 'closedmus')
+    bindpop(map, popup, 'bikedocks')
+
+    var last_pos = null
+    map.on('click', function(e) {
+        if (last_pos != null) {
+            removeLayer(map, "user_position")
         }
 
-        loadMuseums(map)
-        loadDocks(map)
-
-        var popup = new mapboxgl.Popup({
-            closeButton: false,
-            closeOnClick: false
-        });
-
-        bindpop(map, popup, 'openmus')
-        bindpop(map, popup, 'closedmus')
-        bindpop(map, popup, 'bikedocks')
+        last_pos = [e.lngLat.lat, e.lngLat.lng]
+        console.log(last_pos)
+        drawSimpleCircle(map, "user_position", last_pos[0], last_pos[1], 9, 0.8, "yellow")
+    })
     </script>
 </body>
 

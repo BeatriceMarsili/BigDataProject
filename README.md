@@ -9,7 +9,7 @@ The core of the project is the python programming language, version 3. The goal 
 $	pyhton3 - m venv virtual
 `
 
-**2)** Then activate the environment and install all the required packages. They are stored inside teh *environment.txt* file.
+**2)** Then activate the environment and install all the required packages. They are stored inside the *environment.txt* file.
 
 `
 $ 	. virtual/bin/activate

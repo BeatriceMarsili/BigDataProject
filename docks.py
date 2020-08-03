@@ -15,7 +15,7 @@ from utilities import *
 
 
 def extract_station():
-    "Extracts information regarding stations and saves to a csv and a json file"
+    #"Extracts information regarding stations and saves to a csv and a json file"
     url_station = "https://gbfs.capitalbikeshare.com/gbfs/es/station_information.json"
     response_station = urllib.request.urlopen(url_station)
     data_station = json.loads(response_station.read())
@@ -41,7 +41,6 @@ def extract_station():
     return station.to_json(orient="index")
 
 # In[29]:
-
 
 def extract_status():
     """Extracts information regarding station status,
@@ -80,7 +79,7 @@ def extract_status():
 
 
 def join_info():
-    "Joins data regarding informations on stations with data regarding their status. Produces a csv and a json."
+    #"Joins data regarding informations on stations with data regarding their status. Produces a csv and a json."
     extract_station()
     extract_status()
     status=pd.read_csv("station_status.csv")
@@ -117,5 +116,3 @@ def join_station_info_masked():
         docks_final["docks"].append(value)
 
     return docks_final
-
-
