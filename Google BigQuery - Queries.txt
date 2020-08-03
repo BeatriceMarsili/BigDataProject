@@ -1,0 +1,17 @@
+With the query below we merged information regarding available museums and their locations with information regarding stations and their status; obtained a measure of distance between museums and stations in miles and we paired the stations with all the museums in the radius of 1 mile and half (ordering by distance); the results have then been filtered via Python to obtain exactly 5 museums for each station. 
+
+What has been described above has been repeated in the opposite way to find for each museum the 5 closest stations. The corresponding query can be fount below. 
+
+SELECT *, name as Station_Name,
+ST_DISTANCE(stat.stat_point, mus.mus_point)/1609 as approx_distance_miles,
+from bigdatatech-275815.Washington_Bikes.museums mus,
+bigdatatech-275815.Washington_Bikes.Stations stat
+where ST_DWITHIN( stat.stat_point,mus.mus_point, 2300) = True 
+order by Station_Name, approx_distance_miles 
+
+SELECT *,
+ST_DISTANCE(mus.mus_point, stat.stat_point)/1609 as approx_distance_miles, 
+from bigdatatech-275815.Washington_Bikes.museums_filt mus,
+bigdatatech-275815.Washington_Bikes.Stations stat
+where ST_DWITHIN(mus.mus_point, stat.stat_point, 2300) = True 
+order by museum, approx_distance_miles 
