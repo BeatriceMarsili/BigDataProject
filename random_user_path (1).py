@@ -27,6 +27,8 @@ def user_path(lon, lat):
     "Given longitude and latitude returns a list of 6 museums and related stations"
 
     stat=pd.read_csv("stat_close_mus_filt.csv")
+    stat = stat.drop(stat[stat.avlb_bikes ==False].index)
+    stat = stat.drop(stat[stat.avlb_docks ==False].index)  
     stat = stat.drop('Unnamed: 0', 1)
     stat_point = list(zip(stat.lon, stat.lat))
     current= np.inf
@@ -45,6 +47,8 @@ def user_path(lon, lat):
         path["First_museum"]=[(list(I_mus["longitude"])[0], list(I_mus["latitude"])[0]), list(I_mus["museum"])[0]]
 
     mus=pd.read_csv("mus_close_stat_filt.csv")
+    mus = mus.drop(mus[mus.avlb_bikes ==False].index)
+    mus = mus.drop(mus[mus.avlb_docks ==False].index)
 
     I_mus_stat = mus.loc[mus["museum"]==list(I_mus["museum"])[0]].head(1)
     path["First_museum_station"]=[(list(I_mus_stat["lon"])[0], list(I_mus_stat["lat"])[0]), list(I_mus_stat["name"])[0]]
