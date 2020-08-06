@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[81]:
 
 
 import json
@@ -11,7 +10,6 @@ from datetime import datetime, timezone
 import pytz
 
 
-# In[82]:
 
 
 def extract_station():
@@ -71,10 +69,6 @@ def extract_status():
     status.to_json("Station_status.json", orient="index")
     return "Produced a csv and a json file with stations and their current status."
 
-
-# In[84]:
-
-
 def join_info():
     "Joins data regarding informations on stations with data regarding their status. Produces a csv and a json."
     extract_station()
@@ -107,56 +101,35 @@ def join_info():
     return "Produced a csv and a json file with joined information abouth stations and their status"
 
 
-# In[85]:
-
-
-extract_station()
-
-
-# In[86]:
-
-
-extract_status()
-
-
-# In[87]:
-
-
-join_info()
-
-
-# In[88]:
-
-
-#df = pd.read_csv("bq-results-20200629-162839-y9zreuyj5fvc.csv")
 mus = pd.read_csv("museums_info.csv")
 closed = list(mus.loc[(mus["museums/permanently_closed"] == True), "museums/name"])
 
 df= pd.read_csv("Museums_in_DC.csv", sep=";")
 df = df[-df.NAME.isin(closed)]
 df.to_csv("Musuems_in_DC_filt.csv")
-print(mus.shape, df.shape)
 
 
-# In[89]:
 
 
 mus = pd.read_csv("mus_close_stat.csv")
+info = pd.read_csv("Stat_complete_info.csv")
+final = pd.merge(final, info, on='station_id')
+final.drop(columns=["Station_Name"])
 final = mus.groupby(["museum"]).head(5)
 final.reset_index(drop=True, inplace=True)
 final.to_csv("mus_close_stat_filt.csv")
 
 
-# In[90]:
 
 
 stat = pd.read_csv("stat_close_mus.csv")
 final = stat.groupby(["name"]).head(5)
+final = pd.merge(final, info, on='station_id')
+final.drop(columns=["Station_Name"])
 final.reset_index(drop=True, inplace=True)
 final.to_csv("stat_close_mus_filt.csv")
 
 
-# In[ ]:
 
 
 
