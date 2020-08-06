@@ -88,6 +88,8 @@ def join_info():
     station_status["num_bikes_available"] = station_status["num_bikes_available"] - station_status["num_bikes_disabled"]
     station_status["num_docks_available"] = station_status["num_docks_available"] - station_status["num_docks_disabled"]
     station_status = station_status.drop(['num_bikes_disabled', 'num_docks_disabled'], axis=1)
+    station_status["avlb_bikes"] = station_status.num_bikes_available.apply(lambda x: True if x > 2 else False)
+    station_status["avlb_docks"] = station_status.num_docks_available.apply(lambda x: True if x >2 else False)
     quick_look = pd.concat([station_status["Station_Name"],
                              station_status["num_bikes_available"],
                              station_status["num_docks_available"],
@@ -95,7 +97,9 @@ def join_info():
                              station_status["capacity"],
                              station_status["lat"],
                              station_status["lon"],
-                             station_status["last_updated_date"]], axis=1)
+                             station_status["last_updated_date"],
+                             station_status["avlb_bikes"],
+                             station_status["avlb_docks"]], axis=1)
     quick_look = quick_look.rename(columns={'lat': 'station_lat',
                                          'lon': 'station_lon'})
     quick_look.to_csv("Stat_complete_info.csv")
