@@ -37,9 +37,11 @@ def museums_info():
 			
 			basic = {
 				"name":element["properties"]["NAME"],
+				"label":element["properties"]["LABEL"],
 				"address":element["properties"]["MAR_MATCHADDRESS"],
 				"longitude":element["properties"]["MAR_LONGITUDE"],
-				"latitude":element["properties"]["MAR_LATITUDE"]
+				"latitude":element["properties"]["MAR_LATITUDE"],
+				"suggested_time":90
 			}
 
 			museums_clean["museums"].append(basic)
@@ -55,6 +57,7 @@ def museums_info():
 
 	for element in museums_clean["museums"]:
 		data = {}
+
 		if not connect_online_API:
 			#use the cached local files, which are saved with an unique MD5 hash
 			encrypter = hashlib.md5()
@@ -83,6 +86,8 @@ def museums_info():
 					print(element)
 			else:
 				element["place_id"] = 0
+				data = {"status":"NOT OK"}
+				element["discard"] = "true"
 			
 			if element["place_id"] != 0:
 
@@ -106,9 +111,9 @@ def museums_info():
 
 				if debug:
 					cache_string = ""
-					if cache_local:
-						cache_string = "not"
-					print("data loaded from google API source and " + cache_string + " cached locally")
+					if not cache_local:
+						cache_string = "not "
+					print("data loaded from google API source and " + cache_string + "cached locally")
 
 		#Now we proceed with the extraction of the relevant data from the "data" variabile - NOTE: data is actually kinda a bad name, will refactor it
 		#permanently closed?
@@ -143,4 +148,4 @@ def museums_info():
 	return museums_clean
 
 #standalone execution
-#elaborate()
+#museums_info()

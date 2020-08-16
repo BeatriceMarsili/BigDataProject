@@ -91,7 +91,7 @@
         <div class="container control">
             <div class="row text-center align-middle" style="height: 40px;">
                 <div class="col-sm" style="margin: auto; font-size: 18px;">
-                    # of Museums.
+                    # of Museums
                 </div>
             </div>
             <div class="row" style="height: 10px">
@@ -140,25 +140,53 @@
                                 })
                             ).then(
                                 function( data, textStatus, jqXHR ) {
-                                    console.log(path)
+                                    //console.log(path)
                                     
                                     var coords = []
                                     coords.push([last_pos[1],last_pos[0]])
                                     coords.push(path["1_station"][0])
 
+                                    var text = []
+                                    text.push(["stat",path["1_station"][1]])
+
                                     for (var i = 1 ; i <= museum_count; i++) {
                                         coords.push(path[i+"_museum_station"][0])
                                         coords.push(path[i+"_museum"][0])
                                         coords.push(path[i+"_museum_station"][0])
-                                    }
 
+                                        text.push(["stat",path[i+"_museum_station"][1]])
+                                        text.push(["mus",path[i+"_museum"][1]])
+                                        text.push(["stat",path[i+"_museum_station"][1]])
+                                    }
+                                    //console.log(text)
+
+                                    text.pop()
+                                    coords.pop()
+
+                                    $("#path_container").html(plot_text(text))
                                     plot_path(map, coords, mapboxgl.accessToken )
+                                    $("#visiblecontainer").removeClass("invisible")
                                 }
                             )
                         }
                     })()'>
                         VISIT
                     </button>
+                </div>
+            </div>
+        </div>
+        <div id="visiblecontainer" class="container control invisible" >
+            <div class="row text-center align-middle" style="height: 40px;">
+                <div class="col-sm" style="margin: auto; font-size: 18px;">
+                    Elaborated path
+                </div>
+            </div>
+            <div class="row" style="height: 10px">
+                <hr class="col-sm-9" style="margin-top:0;margin-bottom:0">
+            </div>
+            <div class="row">
+               <div id="path_container" class="col-sm" style=" max-height: 470px; overflow-y: scroll; font-size:12px">
+
                 </div>
             </div>
         </div>

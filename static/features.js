@@ -90,34 +90,36 @@ function loadMuseums(map) {
     ).then(function(x) {
         var x = 0
         museums_data.museums.forEach(function(item, index) {
+            if (item.discard != "true"){
+                ratingint = item.rating
+                ratingstr = ""
 
-            ratingint = item.rating
-            ratingstr = ""
+                while (ratingint > 1) {
+                    ratingstr = ratingstr + "\u2605"
+                    ratingint = ratingint - 1
+                }
 
-            while (ratingint > 1) {
-                ratingstr = ratingstr + "\u2605"
-                ratingint = ratingint - 1
-            }
+                if (ratingint > 0.5)
+                    ratingstr = ratingstr + "<span class='halftext'>\u2605</span>"
 
-            if (ratingint > 0.5)
-                ratingstr = ratingstr + "<span class='halftext'>\u2605</span>"
+                var tmpmus = {
+                    'type': 'Feature',
+                    'properties': {
+                        'description': "<b>Museum: " + item.name + "</b><br>Website: " + item.website + "<br>Phone Number: " + item.phone_number + "<br><p class='text-center'>" + ratingstr + "</p>"
+                    },
+                    'geometry': {
+                        'type': 'Point',
+                        'coordinates': [item.longitude, item.latitude]
+                    }
+                }
 
-            var tmpmus = {
-                'type': 'Feature',
-                'properties': {
-                    'description': "<b>Museum: " + item.name + "</b><br>Website: " + item.website + "<br>Phone Number: " + item.phone_number + "<br><p class='text-center'>" + ratingstr + "</p>"
-                },
-                'geometry': {
-                    'type': 'Point',
-                    'coordinates': [item.longitude, item.latitude]
+                if (item.permanently_closed) {
+                    closedPoints.data.features.push(tmpmus)
+                } else {
+                    openPoints.data.features.push(tmpmus)
                 }
             }
 
-            if (item.permanently_closed) {
-                closedPoints.data.features.push(tmpmus)
-            } else {
-                openPoints.data.features.push(tmpmus)
-            }
         })
         map.addSource('openmus', openPoints)
         map.addSource('closedmus', closedPoints)
@@ -193,7 +195,7 @@ function bindpop(map, popup, source) {
             .setLngLat(coordinates)
             .setHTML(description)
             .addTo(map);
-    });
+    }); 
 
     map.on('mouseleave', source, function() {
         map.getCanvas().style.cursor = '';
@@ -234,10 +236,39 @@ function plot_path(map, coordinates, token) {
         if (route != null) {
             removeLayer(map,"route")
         }
-
         route = result.routes[0].geometry.coordinates
         drawLine(map, "route", route , "black", 5)
     })
+}
+
+function plot_text(text) {
+    var output = ""
+    text.forEach(function(item, index) {
+        if (item[0] == "stat") {
+            //station
+            var element = docks_data["docks"].find(x => x.Station_Name === item[1])
+            output = output.concat("Station: " + element.Station_Name + "<br>bikes: " + element.num_bikes_available + "/" + element.capacity + "<br/><br>")
+
+        } else {
+            console.log(item[1].toUpperCase())
+            var element = museums_data["museums"].find(x => x.label === item[1])
+            var day = new Date().getDay()
+            var hours = ""
+
+            day = 1
+
+            if (element["opening_hours"] != null) {
+                var time = element["opening_hours"].periods.find(x => x.open.day === day)
+                if (time != undefined) {
+                    hours = "<br/>hours: " + Math.round(time.open.time/100).toLocaleString('en-US', {minimumIntegerDigits: 2, useGrouping:false})+":"+Math.round(time.open.time%100).toLocaleString('en-US', {minimumIntegerDigits: 2, useGrouping:false}) + " - " + Math.round(time.close.time/100).toLocaleString('en-US', {minimumIntegerDigits: 2, useGrouping:false})+":"+Math.round(time.open.time%100).toLocaleString('en-US', {minimumIntegerDigits: 2, useGrouping:false})
+                }
+            }  
+            output = output.concat("<strong>Museum: " + element.name + "</strong>" + hours + "<br/>Average visit: " + element.suggested_time + " mins<br/><br>")
+            
+        }
+    })
+    return output
+
 }
 
 function drawLine(map, name, coordinates, color, width) {

@@ -69,3 +69,7 @@ body {
 .mapboxgl-popup {
     max-width: none !important;
 }
+
+.invisible {
+    display:none;
+}
