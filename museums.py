@@ -87,7 +87,7 @@ def museums_info():
 			else:
 				element["place_id"] = 0
 				data = {"status":"NOT OK"}
-				element["discard"] = "true"
+				element["permanently_closed"] = True
 			
 			if element["place_id"] != 0:
 

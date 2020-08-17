@@ -1,3 +1,4 @@
+
 #!/usr/bin/env python
 # coding: utf-8
 
@@ -24,15 +25,21 @@ def generate_distances_filter():
     df.to_csv("dcmus_filtered.csv")
     print(mus.shape, df.shape)
 
+    info = pd.read_csv("station_complete_info.csv")
+
     # In[89]:
     mus = pd.read_csv("mus_close_stat.csv")
     final = mus.groupby(["museum"]).head(5)
+    final = pd.merge(final, info, on='station_id')
+    final.drop(columns=["Station_Name"])
     final.reset_index(drop=True, inplace=True)
     final.to_csv("mus_close_stat_filtered.csv")
 
     # In[90]:
     stat = pd.read_csv("stat_close_mus.csv")
     final = stat.groupby(["name"]).head(5)
+    final = pd.merge(stat, info, on='station_id')
+    final.drop(columns=["Station_Name_x"])
     final.reset_index(drop=True, inplace=True)
     final.to_csv("stat_close_mus_filtered.csv")
 
@@ -46,11 +53,17 @@ def random_pos_wash():
 # In[57]:
 
 
-def user_path(lat, lon, count):
+def user_path(lat = 0, lon = 0, count = -1):
     #"Given longitude and latitude returns a list of 6 museums and related stations"
     generate_distances_filter()
 
+    if (lat == 0 or lon == 0 or count == -1):
+        return {"status":"error"}
+
+
     stat=pd.read_csv("stat_close_mus_filtered.csv")
+    stat = stat.drop(stat[stat.avlb_bikes ==False].index)
+    stat = stat.drop(stat[stat.avlb_docks ==False].index)
     stat = stat.drop('Unnamed: 0', 1)
     stat_point = list(zip(stat.lon, stat.lat))
     current= np.inf
@@ -71,6 +84,8 @@ def user_path(lat, lon, count):
         path["1_museum"]=[(list(I_mus["longitude"])[0], list(I_mus["latitude"])[0]), list(I_mus["museum"])[0]]
 
     mus=pd.read_csv("mus_close_stat_filtered.csv")
+    mus = mus.drop(mus[mus.avlb_bikes ==False].index)
+    mus = mus.drop(mus[mus.avlb_docks ==False].index)
 
     I_mus_stat = mus.loc[mus["museum"]==list(I_mus["museum"])[0]].head(1)
     path["1_museum_station"]=[(list(I_mus_stat["lon"])[0], list(I_mus_stat["lat"])[0]), list(I_mus_stat["name"])[0]]

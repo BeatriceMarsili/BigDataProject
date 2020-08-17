@@ -255,7 +255,8 @@ function plot_text(text) {
             var day = new Date().getDay()
             var hours = ""
 
-            day = 1
+            //sunday testing
+            //day = 1
 
             if (element["opening_hours"] != null) {
                 var time = element["opening_hours"].periods.find(x => x.open.day === day)

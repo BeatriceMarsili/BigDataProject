@@ -29,8 +29,10 @@ def serveDocks():
 
 	return data_docks
 
-@app.route('/path')
+@app.route('/api/path')
 def pathfinder():
+	if request.args.get('count') == None or request.args.get('lat') == None or request.args.get('lon') == None:
+		return user_path(0,0,-1)
 
 	count = int(request.args.get('count'))
 	lat = float(request.args.get('lat'))
